@@ -137,4 +137,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default SpinningWheel;
+export default React.memo(SpinningWheel);

@@ -1,9 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {StyleSheet, View, Text, Dimensions, Animated} from 'react-native';
 import {State, PanGestureHandler} from 'react-native-gesture-handler';
-import * as d3Shape from 'd3-shape';
 import color from 'randomcolor';
 import {snap} from '@popmotion/popcorn';
+import * as d3Shape from 'd3-shape';
 import SpinningWheel from './SpinningWheel';
 
 const {width} = Dimensions.get('screen');
@@ -24,6 +24,22 @@ const makeWheel = () => {
 		count: NUMBER_OF_SEGMENTS,
 	});
 
+	const newValues = [12, 23, 34, 45, 56, 67, 78, 89, 90, 13, 15, 44];
+	const newColors = [
+		'#091f84',
+		'#a02608',
+		'#eded02',
+		'#d88704',
+		'#3f0b93',
+		'#1d7205',
+		'#037f05',
+		'#99071d',
+		'#039622',
+		'#0e9e8a',
+		'#1d7a06',
+		'#07326d',
+	];
+
 	return arcs.map((arc, index) => {
 		const instance = d3Shape
 			.arc()
@@ -32,8 +48,8 @@ const makeWheel = () => {
 			.innerRadius(50);
 		return {
 			path: instance(arc),
-			color: colors[index],
-			value: Math.round(Math.random() * 10 + 1) * 200, //[200, 2200]
+			color: newColors[index],
+			value: newValues[index],
 			centroid: instance.centroid(arc),
 		};
 	});
@@ -47,6 +63,8 @@ const SpinningContainer = () => {
 	const [enabled, setEnabled] = useState(true);
 	const [finished, setFinished] = useState(false);
 	const [winner, setWinner] = useState(null);
+
+	console.log('ANIMATED VALUE ------------------', new Animated.Value(0));
 
 	useEffect(() => {
 		_angle.addListener((event) => {
@@ -68,6 +86,7 @@ const SpinningContainer = () => {
 	};
 
 	const onPan = ({nativeEvent}) => {
+		// console.log('NATIVE EVENT -------------------', _angle);
 		if (nativeEvent.state === State.END) {
 			const {velocityY} = nativeEvent;
 			Animated.decay(_angle, {
@@ -75,7 +94,8 @@ const SpinningContainer = () => {
 				deceleration: 0.999,
 				useNativeDriver: true,
 			}).start(() => {
-				console.log('ANGLE ---------------------', angle);
+				// console.log('VELOCITY YY -------------', velocityY);
+				// console.log('ANGLE ---------------------', angle);
 				_angle.setValue(angle.current % ONE_TURN);
 				const snapTo = snap(ONE_TURN / NUMBER_OF_SEGMENTS);
 				Animated.timing(_angle, {
@@ -95,6 +115,7 @@ const SpinningContainer = () => {
 	return (
 		<PanGestureHandler onHandlerStateChange={onPan} enabled={enabled}>
 			<View style={styles.container}>
+				{/* {console.log('________ANGLE -------------------------', _angle)} */}
 				<SpinningWheel _angle={_angle} _wheelPaths={_wheelPaths} />
 				{finished && enabled && renderWinner()}
 			</View>
